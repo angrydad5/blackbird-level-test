@@ -9,6 +9,7 @@ import { GoalMultiScreen } from "@/components/GoalMultiScreen";
 import { ResultCard } from "@/components/ResultCard";
 import { scoreTest, type ScoringResult } from "@/lib/scoring";
 import { GOAL1_OPTIONS, GOAL2_OPTIONS, GOAL3_OPTIONS } from "@/lib/goals";
+import { trackEvent } from "@/lib/analytics";
 
 type Step = "landing" | "test" | "goal1" | "goal2" | "goal3" | "result";
 
@@ -24,7 +25,14 @@ function Home() {
   const [attemptId, setAttemptId] = useState<string | null>(null);
 
   if (step === "landing") {
-    return <LandingScreen onStart={() => setStep("test")} />;
+    return (
+      <LandingScreen
+        onStart={() => {
+          trackEvent("test_start");
+          setStep("test");
+        }}
+      />
+    );
   }
 
   if (step === "test") {
@@ -78,6 +86,7 @@ function Home() {
         options={GOAL3_OPTIONS}
         onNext={async (selected) => {
           const goals = { goal1, goal2, goal3: selected };
+          trackEvent("test_complete");
 
           try {
             const res = await fetch("/api/test-attempts", {

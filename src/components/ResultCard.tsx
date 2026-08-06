@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { ScoringResult } from "@/lib/scoring";
+import { trackEvent } from "@/lib/analytics";
 
 const GOAL_CLOSING_SENTENCES: Record<string, string> = {
   "goal-listening": "미드/유튜브에서 원어민이 이 속도로 말합니다.",
@@ -55,6 +56,10 @@ export function ResultCard({
         }),
       });
       if (!res.ok) throw new Error();
+      const data = await res.json();
+      if (data.convertkit === "ok") {
+        trackEvent("email_submit");
+      }
       setStatus("success");
     } catch {
       setStatus("error");
