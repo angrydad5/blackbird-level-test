@@ -36,7 +36,7 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/test-attem
     typeof goal2 === "string" ? goal2 : null,
   ].filter((t): t is string => Boolean(t));
 
-  const siteUrl = process.env.SITE_URL ?? "https://blackbirdenglish.co";
+  const siteUrl = process.env.SITE_URL ?? "https://test.blackbirdenglish.co";
   const fields = {
     score: typeof overallScore === "number" ? Math.round(overallScore * 10) / 10 : undefined,
     band_label: typeof band === "string" ? band : undefined,
