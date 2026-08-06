@@ -58,7 +58,11 @@ export function ResultCard({
       if (!res.ok) throw new Error();
       const data = await res.json();
       if (data.convertkit === "ok") {
-        trackEvent("email_submit");
+        trackEvent("email_submit", {
+          overall_score: overallScore,
+          band_label: band.label,
+          goal: goal1 ?? undefined,
+        });
       }
       setStatus("success");
     } catch {

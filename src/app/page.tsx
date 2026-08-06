@@ -86,7 +86,11 @@ function Home() {
         options={GOAL3_OPTIONS}
         onNext={async (selected) => {
           const goals = { goal1, goal2, goal3: selected };
-          trackEvent("test_complete");
+          trackEvent("test_complete", {
+            overall_score: result?.overallScore,
+            band_label: result?.band.label,
+            goal: goal1 ?? undefined,
+          });
 
           try {
             const res = await fetch("/api/test-attempts", {

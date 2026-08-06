@@ -8,9 +8,15 @@ declare global {
 
 export type AnalyticsEvent = "test_start" | "test_complete" | "email_submit";
 
-export function trackEvent(name: AnalyticsEvent) {
+export type AnalyticsParams = {
+  overall_score?: number;
+  band_label?: string;
+  goal?: string;
+};
+
+export function trackEvent(name: AnalyticsEvent, params?: AnalyticsParams) {
   if (typeof window === "undefined") return;
 
-  window.gtag?.("event", name);
-  window.fbq?.("trackCustom", name);
+  window.gtag?.("event", name, params);
+  window.fbq?.("trackCustom", name, params);
 }
