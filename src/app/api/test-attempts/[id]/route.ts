@@ -13,12 +13,18 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/test-attem
     return NextResponse.json({ error: "invalid email" }, { status: 400 });
   }
 
-  const supabase = getSupabaseAdmin();
-  const { error } = await supabase.from("test_attempts").update({ email }).eq("id", id);
+  try {
+    const supabase = getSupabaseAdmin();
+    const { error } = await supabase.from("test_attempts").update({ email }).eq("id", id);
 
-  if (error) {
-    console.error("[test-attempts PATCH] supabase update failed:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error("[test-attempts PATCH] supabase update failed:", error.message);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[test-attempts PATCH] unexpected supabase error:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 
   let convertkit: "ok" | "error" | "skipped" = "skipped";
