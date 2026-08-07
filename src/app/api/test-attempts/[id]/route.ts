@@ -37,13 +37,30 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/test-attem
   ].filter((t): t is string => Boolean(t));
 
   const siteUrl = process.env.SITE_URL ?? "https://test.blackbirdenglish.co";
+
+  const SEQUENCE_BY_GOAL: Record<string, string> = {
+    "goal-listening": "seq-listening",
+    "goal-travel": "seq-travel",
+    "goal-conversation": "seq-conversation",
+    "goal-career": "seq-career",
+  };
+  const sequence = typeof goal1 === "string" ? SEQUENCE_BY_GOAL[goal1] : undefined;
+
+  const resultsUrl = new URL(`${siteUrl}/results/${id}`);
+  if (sequence) {
+    resultsUrl.searchParams.set("utm_source", "kit");
+    resultsUrl.searchParams.set("utm_medium", "email");
+    resultsUrl.searchParams.set("utm_campaign", sequence);
+    resultsUrl.searchParams.set("utm_content", "results-link");
+  }
+
   const fields = {
     score: typeof overallScore === "number" ? Math.round(overallScore * 10) / 10 : undefined,
     band_label: typeof band === "string" ? band : undefined,
     cefr: typeof cefr === "string" ? cefr : undefined,
     opic: typeof opic === "string" ? opic : undefined,
     missed_summary: Array.isArray(clipScores) ? buildMissedSummary(clipScores) : undefined,
-    results_url: `${siteUrl}/results/${id}`,
+    results_url: resultsUrl.toString(),
   };
 
   console.log(
