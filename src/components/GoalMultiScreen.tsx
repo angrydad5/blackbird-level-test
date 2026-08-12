@@ -63,7 +63,8 @@ export function GoalMultiScreen({
 
       <button
         onClick={() => onNext(selected)}
-        className="mt-8 w-full rounded-2xl bg-gold py-4 text-[17px] font-semibold text-navy-deep transition active:scale-[0.98]"
+        disabled={selected.length === 0}
+        className="mt-8 w-full rounded-2xl bg-gold py-4 text-[17px] font-semibold text-navy-deep transition active:scale-[0.98] disabled:bg-offwhite/10 disabled:text-offwhite/30"
       >
         {buttonLabel}
       </button>

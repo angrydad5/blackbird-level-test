@@ -50,6 +50,7 @@ function Home() {
   if (step === "goal1") {
     return (
       <GoalSingleScreen
+        key="goal1"
         step={1}
         totalSteps={3}
         title="영어 공부하는 가장 큰 이유는?"
@@ -65,6 +66,7 @@ function Home() {
   if (step === "goal2") {
     return (
       <GoalSingleScreen
+        key="goal2"
         step={2}
         totalSteps={3}
         title="얼마나 급하세요?"
