@@ -38,6 +38,7 @@ function Home() {
   if (step === "test") {
     return (
       <TestScreen
+        src={src}
         onComplete={(a) => {
           setAnswers(a);
           setResult(scoreTest(a));

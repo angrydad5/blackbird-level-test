@@ -7,8 +7,10 @@ import { MAX_PLAYS, TOTAL_CLIPS, clipAudioSrc, clipImageSrc } from "@/lib/clips"
 
 export function TestScreen({
   onComplete,
+  src,
 }: {
   onComplete: (answers: string[]) => void;
+  src?: string | null;
 }) {
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
@@ -17,11 +19,28 @@ export function TestScreen({
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const sessionIdRef = useRef<string>(
+    typeof crypto !== "undefined" ? crypto.randomUUID() : "",
+  );
 
   useEffect(() => {
     setText("");
     setPlayCount(0);
     setIsPlaying(false);
+  }, [index]);
+
+  useEffect(() => {
+    fetch("/api/progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId: sessionIdRef.current,
+        src,
+        clipNumber: index + 1,
+      }),
+      keepalive: true,
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index]);
 
   useEffect(() => {
