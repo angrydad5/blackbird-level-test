@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+const GA_MEASUREMENT_ID_2 = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID_2;
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
 const geistSans = Geist({
@@ -51,6 +52,13 @@ export default function RootLayout({
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
                 gtag('config', '${GA_MEASUREMENT_ID}');
+                ${
+                  GA_MEASUREMENT_ID_2
+                    ? `gtag('config', '${GA_MEASUREMENT_ID_2}', {
+                  linker: { domains: ['seanteacher.com', 'blackbirdenglish.co'] }
+                });`
+                    : ""
+                }
               `}
             </Script>
           </>
