@@ -12,14 +12,26 @@ type Overview = {
   emailCaptureRate: number;
 };
 
+type GoalRow = { tag: string; label: string; count: number; percent: number };
+
+type ClipMissRow = {
+  clipNumber: number;
+  sentence: string;
+  missRate: number;
+  missCount: number;
+};
+
 type StatsResponse = {
   overview: Overview;
+  goalBreakdown: GoalRow[];
+  urgencyBreakdown: GoalRow[];
+  perClipMissRate: ClipMissRow[];
 };
 
 const RANGE_LABELS: Record<Range, string> = {
-  "7d": "최근 7일",
-  "30d": "최근 30일",
-  all: "전체 기간",
+  "7d": "Last 7 days",
+  "30d": "Last 30 days",
+  all: "All time",
 };
 
 function StatCard({ label, value }: { label: string; value: string }) {
@@ -31,23 +43,50 @@ function StatCard({ label, value }: { label: string; value: string }) {
   );
 }
 
+function BreakdownBar({ label, count, percent }: { label: string; count: number; percent: number }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-offwhite/80">{label}</span>
+        <span className="text-offwhite/50">
+          {count} ({percent.toFixed(1)}%)
+        </span>
+      </div>
+      <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-offwhite/10">
+        <div className="h-full rounded-full bg-gold" style={{ width: `${percent}%` }} />
+      </div>
+    </div>
+  );
+}
+
 export function AdminDashboard() {
   const [range, setRange] = useState<Range>("all");
   const [data, setData] = useState<StatsResponse | null>(null);
+  const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
+    setError(false);
     fetch(`/api/admin/stats?range=${range}`)
-      .then((res) => res.json())
-      .then((json) => setData(json))
+      .then(async (res) => {
+        if (!res.ok) {
+          if (res.status === 401) {
+            window.location.reload();
+            return;
+          }
+          throw new Error("failed to load stats");
+        }
+        setData(await res.json());
+      })
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, [range]);
 
   return (
     <main className="min-h-screen px-6 py-10">
       <div className="mx-auto w-full max-w-3xl">
-        <h1 className="text-2xl font-bold text-offwhite">관리자 대시보드</h1>
+        <h1 className="text-2xl font-bold text-offwhite">Admin Dashboard</h1>
 
         <div className="mt-6 flex gap-2">
           {(["7d", "30d", "all"] as Range[]).map((r) => (
@@ -65,24 +104,85 @@ export function AdminDashboard() {
           ))}
         </div>
 
-        {loading || !data ? (
-          <p className="mt-8 text-sm text-offwhite/50">불러오는 중...</p>
+        {error ? (
+          <p className="mt-8 text-sm text-offwhite/50">
+            Couldn&apos;t load stats. Try refreshing the page.
+          </p>
+        ) : loading || !data ? (
+          <p className="mt-8 text-sm text-offwhite/50">Loading...</p>
         ) : (
-          <div className="mt-8">
-            <h2 className="text-sm font-semibold text-offwhite/60">개요</h2>
-            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-              <StatCard label="테스트 시작" value={String(data.overview.totalStarts)} />
-              <StatCard label="테스트 완료" value={String(data.overview.totalCompletions)} />
-              <StatCard
-                label="완료율"
-                value={`${data.overview.completionRate.toFixed(1)}%`}
-              />
-              <StatCard label="이메일 수집" value={String(data.overview.totalEmails)} />
-              <StatCard
-                label="이메일 수집률"
-                value={`${data.overview.emailCaptureRate.toFixed(1)}%`}
-              />
-            </div>
+          <div className="mt-8 flex flex-col gap-10">
+            <section>
+              <h2 className="text-sm font-semibold text-offwhite/60">Overview</h2>
+              <p className="mt-1 text-xs text-offwhite/40">
+                &quot;Test starts&quot; tracking only began recently (new table, no historical
+                backfill) while completions go back to the start of the project, so completion
+                rate will look inflated until enough new traffic accumulates under both.
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <StatCard label="Test starts" value={String(data.overview.totalStarts)} />
+                <StatCard label="Test completions" value={String(data.overview.totalCompletions)} />
+                <StatCard
+                  label="Completion rate"
+                  value={`${data.overview.completionRate.toFixed(1)}%`}
+                />
+                <StatCard label="Emails captured" value={String(data.overview.totalEmails)} />
+                <StatCard
+                  label="Email capture rate"
+                  value={`${data.overview.emailCaptureRate.toFixed(1)}%`}
+                />
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-sm font-semibold text-offwhite/60">
+                Why are they studying English?
+              </h2>
+              <div className="mt-3 flex flex-col gap-3">
+                {data.goalBreakdown.map((g) => (
+                  <BreakdownBar key={g.tag} label={g.label} count={g.count} percent={g.percent} />
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-sm font-semibold text-offwhite/60">How urgent is it for them?</h2>
+              <div className="mt-3 flex flex-col gap-3">
+                {data.urgencyBreakdown.map((g) => (
+                  <BreakdownBar key={g.tag} label={g.label} count={g.count} percent={g.percent} />
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-sm font-semibold text-offwhite/60">
+                Per-clip miss rate (worst first)
+              </h2>
+              <div className="mt-3 flex flex-col gap-2">
+                {data.perClipMissRate.map((c) => (
+                  <div
+                    key={c.clipNumber}
+                    className="rounded-xl border border-offwhite/10 bg-offwhite/[0.03] p-3"
+                  >
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-offwhite">
+                        Clip {c.clipNumber}
+                      </span>
+                      <span className="text-offwhite/50">
+                        {c.missCount} missed ({c.missRate.toFixed(1)}%)
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-offwhite/40">{c.sentence}</p>
+                    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-offwhite/10">
+                      <div
+                        className="h-full rounded-full bg-gold"
+                        style={{ width: `${c.missRate}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
           </div>
         )}
       </div>
