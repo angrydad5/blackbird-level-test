@@ -34,7 +34,7 @@ export async function GET(request: Request) {
 
   const supabase = getSupabaseAdmin();
 
-  let startsQuery = supabase.from("test_progress").select("*", { count: "exact", head: true });
+  let startsQuery = supabase.from("test_progress").select("furthest_clip");
   let emailsQuery = supabase
     .from("test_attempts")
     .select("*", { count: "exact", head: true })
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
   }
 
   const [
-    { count: starts, error: startsError },
+    { data: progress, error: startsError },
     { count: emails, error: emailsError },
     { data: attempts, error: attemptsError },
   ] = await Promise.all([startsQuery, emailsQuery, attemptsQuery]);
@@ -59,10 +59,24 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const totalStarts = starts ?? 0;
+  const progressRows = progress ?? [];
+  const totalStarts = progressRows.length;
   const totalEmails = emails ?? 0;
   const rows = attempts ?? [];
   const totalCompletions = rows.length;
+
+  // Drop-off funnel: how many sessions reached at least clip N
+  const dropoffFunnel = Array.from({ length: 10 }, (_, i) => {
+    const clipNumber = i + 1;
+    const reached = progressRows.filter(
+      (p) => (p.furthest_clip as number) >= clipNumber,
+    ).length;
+    return {
+      clipNumber,
+      reached,
+      percentOfStarts: totalStarts > 0 ? (reached / totalStarts) * 100 : 0,
+    };
+  });
 
   // Goal / urgency breakdown
   const goal1Counts: Record<string, number> = {};
@@ -119,5 +133,6 @@ export async function GET(request: Request) {
     goalBreakdown,
     urgencyBreakdown,
     perClipMissRate,
+    dropoffFunnel,
   });
 }

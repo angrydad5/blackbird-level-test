@@ -21,11 +21,14 @@ type ClipMissRow = {
   missCount: number;
 };
 
+type DropoffRow = { clipNumber: number; reached: number; percentOfStarts: number };
+
 type StatsResponse = {
   overview: Overview;
   goalBreakdown: GoalRow[];
   urgencyBreakdown: GoalRow[];
   perClipMissRate: ClipMissRow[];
+  dropoffFunnel: DropoffRow[];
 };
 
 const RANGE_LABELS: Record<Range, string> = {
@@ -145,6 +148,33 @@ export function AdminDashboard() {
               <div className="mt-3 flex flex-col gap-3">
                 {data.urgencyBreakdown.map((g) => (
                   <BreakdownBar key={g.tag} label={g.label} count={g.count} percent={g.percent} />
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-sm font-semibold text-offwhite/60">
+                Drop-off funnel (how far people get)
+              </h2>
+              <p className="mt-1 text-xs text-offwhite/40">
+                Clip 1 = everyone who started. Each bar below shows how many made it that far.
+              </p>
+              <div className="mt-3 flex flex-col gap-2">
+                {data.dropoffFunnel.map((d) => (
+                  <div key={d.clipNumber} className="flex items-center gap-3">
+                    <span className="w-14 shrink-0 text-xs font-medium text-offwhite/50">
+                      Clip {d.clipNumber}
+                    </span>
+                    <div className="h-2.5 w-full overflow-hidden rounded-full bg-offwhite/10">
+                      <div
+                        className="h-full rounded-full bg-gold"
+                        style={{ width: `${d.percentOfStarts}%` }}
+                      />
+                    </div>
+                    <span className="w-24 shrink-0 text-right text-xs text-offwhite/50">
+                      {d.reached} ({d.percentOfStarts.toFixed(0)}%)
+                    </span>
+                  </div>
                 ))}
               </div>
             </section>
