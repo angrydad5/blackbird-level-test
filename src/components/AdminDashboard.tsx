@@ -114,11 +114,6 @@ export function AdminDashboard() {
           <div className="mt-8 flex flex-col gap-10">
             <section>
               <h2 className="text-sm font-semibold text-offwhite/60">Overview</h2>
-              <p className="mt-1 text-xs text-offwhite/40">
-                &quot;Test starts&quot; tracking only began recently (new table, no historical
-                backfill) while completions go back to the start of the project, so completion
-                rate will look inflated until enough new traffic accumulates under both.
-              </p>
               <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 <StatCard label="Test starts" value={String(data.overview.totalStarts)} />
                 <StatCard label="Test completions" value={String(data.overview.totalCompletions)} />
