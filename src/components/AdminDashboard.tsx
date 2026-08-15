@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-type Range = "7d" | "30d" | "all";
+type Range = "24h" | "7d" | "30d" | "all";
 
 type Overview = {
   totalStarts: number;
@@ -32,6 +32,7 @@ type StatsResponse = {
 };
 
 const RANGE_LABELS: Record<Range, string> = {
+  "24h": "Last 24 hours",
   "7d": "Last 7 days",
   "30d": "Last 30 days",
   all: "All time",
@@ -92,7 +93,7 @@ export function AdminDashboard() {
         <h1 className="text-2xl font-bold text-offwhite">Admin Dashboard</h1>
 
         <div className="mt-6 flex gap-2">
-          {(["7d", "30d", "all"] as Range[]).map((r) => (
+          {(["24h", "7d", "30d", "all"] as Range[]).map((r) => (
             <button
               key={r}
               onClick={() => setRange(r)}

@@ -5,6 +5,7 @@ import { ANSWER_KEYS, MISSED_THRESHOLD } from "@/lib/scoring";
 
 function rangeCutoff(range: string): string | null {
   const now = Date.now();
+  if (range === "24h") return new Date(now - 24 * 60 * 60 * 1000).toISOString();
   if (range === "7d") return new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
   if (range === "30d") return new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
   return null;
