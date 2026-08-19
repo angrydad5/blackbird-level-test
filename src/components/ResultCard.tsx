@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { ScoringResult } from "@/lib/scoring";
-import { trackEvent } from "@/lib/analytics";
+import { trackEvent, trackMetaStandardEvent } from "@/lib/analytics";
 
 const GOAL_CLOSING_SENTENCES: Record<string, string> = {
   "goal-listening": "미드/유튜브에서 원어민이 이 속도로 말합니다.",
@@ -63,6 +63,7 @@ export function ResultCard({
           band_label: band.label,
           goal: goal1 ?? undefined,
         });
+        trackMetaStandardEvent("CompleteRegistration");
       }
       setStatus("success");
     } catch {
